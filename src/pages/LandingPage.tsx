@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useLocation } from "react-router-dom";
 import {
   ArrowRight,
   Check,
@@ -187,6 +187,14 @@ const pricingPlans = (annual: boolean) => [
 export default function LandingPage() {
   const [annual, setAnnual] = useState(false);
   const [selected, setSelected] = useState<(typeof boutiquesDemo)[number] | null>(null);
+  const location = useLocation();
+
+  useEffect(() => {
+    const scrollTo = (location.state as { scrollTo?: string } | null)?.scrollTo;
+    if (scrollTo) {
+      document.getElementById(scrollTo)?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [location.state]);
 
   return (
     <div className="min-h-screen bg-[#FFFEFB] text-zinc-900 selection:bg-[#FCD116]/40 font-[Inter,system-ui,sans-serif]">
@@ -230,12 +238,12 @@ export default function LandingPage() {
               >
                 Créer ma boutique gratuitement <ArrowRight size={18} />
               </Link>
-              <a
-                href="#boutiques"
+              <button
+                onClick={() => document.getElementById("boutiques")?.scrollIntoView({ behavior: "smooth" })}
                 className="h-[52px] px-6 rounded-full bg-white border border-zinc-200 font-semibold text-[14px] inline-flex items-center gap-2 hover:border-zinc-300"
               >
                 <Play size={16} /> Voir les boutiques
-              </a>
+              </button>
             </div>
             <div className="mt-6 flex items-center gap-3 text-[12.5px] text-zinc-500">
               <div className="flex -space-x-2">
