@@ -1,8 +1,18 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../lib/auth";
 
 export default function Header() {
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  function allerVersSection(id: string) {
+    if (location.pathname === "/") {
+      document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+    } else {
+      navigate("/", { state: { scrollTo: id } });
+    }
+  }
 
   return (
     <header className="sticky top-0 z-40 backdrop-blur-xl bg-white/80 border-b border-zinc-100">
@@ -18,9 +28,9 @@ export default function Header() {
         </Link>
 
         <nav className="hidden md:flex items-center gap-7 text-[13.5px] font-medium text-zinc-600">
-          <a href="/#comment" className="hover:text-black">Comment ça marche</a>
-          <a href="/#tarifs" className="hover:text-black">Tarifs</a>
-          <a href="/#boutiques" className="hover:text-black">Boutiques</a>
+          <button onClick={() => allerVersSection("comment")} className="hover:text-black">Comment ça marche</button>
+          <button onClick={() => allerVersSection("tarifs")} className="hover:text-black">Tarifs</button>
+          <button onClick={() => allerVersSection("boutiques")} className="hover:text-black">Boutiques</button>
         </nav>
 
         <div className="flex items-center gap-2">
