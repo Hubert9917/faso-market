@@ -2,6 +2,7 @@ import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ArrowRight, Check } from "lucide-react";
 import Header from "../components/Header";
+import BoutonRetour from "../components/BoutonRetour";
 import { supabase } from "../lib/supabase";
 
 export default function InscriptionPage() {
@@ -42,6 +43,7 @@ export default function InscriptionPage() {
     <div className="min-h-screen bg-[#FFFEFB]">
       <Header />
       <div className="mx-auto max-w-[440px] px-5 py-16 md:py-24">
+        <BoutonRetour className="mb-5 inline-flex items-center gap-1.5 text-[13px] font-semibold text-zinc-500 hover:text-zinc-900 transition" />
         <div className="inline-flex rounded-full bg-[#009E49] text-white px-3 py-1 text-[11px] font-black tracking-widest">
           INSCRIPTION • GRATUIT
         </div>

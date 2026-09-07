@@ -2,6 +2,9 @@ import { useEffect, useState, type FormEvent } from "react";
 import { Package, Plus, Trash2 } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import type { Produit } from "../lib/types";
+import PaginationControls from "./PaginationControls";
+
+const PRODUITS_PAR_PAGE = 6;
 
 export default function ProduitsManager({ boutiqueId }: { boutiqueId: string }) {
   const [produits, setProduits] = useState<Produit[]>([]);
@@ -12,22 +15,28 @@ export default function ProduitsManager({ boutiqueId }: { boutiqueId: string }) 
   const [photo, setPhoto] = useState<File | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const [totalProduits, setTotalProduits] = useState(0);
 
-  async function chargerProduits() {
+  const totalPages = Math.max(1, Math.ceil(totalProduits / PRODUITS_PAR_PAGE));
+
+  async function chargerProduits(pageAffichee: number) {
     setLoading(true);
-    const { data } = await supabase
+    const { data, count } = await supabase
       .from("produits")
-      .select("*")
+      .select("*", { count: "exact" })
       .eq("boutique_id", boutiqueId)
-      .order("created_at", { ascending: false });
+      .order("created_at", { ascending: false })
+      .range((pageAffichee - 1) * PRODUITS_PAR_PAGE, pageAffichee * PRODUITS_PAR_PAGE - 1);
     setProduits((data as Produit[]) ?? []);
+    setTotalProduits(count ?? 0);
     setLoading(false);
   }
 
   useEffect(() => {
-    chargerProduits();
+    chargerProduits(page);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [boutiqueId]);
+  }, [boutiqueId, page]);
 
   async function ajouterProduit(e: FormEvent) {
     e.preventDefault();
@@ -64,7 +73,8 @@ export default function ProduitsManager({ boutiqueId }: { boutiqueId: string }) 
       setPrix("");
       setStock("");
       setPhoto(null);
-      await chargerProduits();
+      setPage(1);
+      await chargerProduits(1);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erreur lors de l'ajout du produit.");
     } finally {
@@ -74,7 +84,11 @@ export default function ProduitsManager({ boutiqueId }: { boutiqueId: string }) 
 
   async function supprimerProduit(id: string) {
     await supabase.from("produits").delete().eq("id", id);
-    setProduits((prev) => prev.filter((p) => p.id !== id));
+    if (produits.length === 1 && page > 1) {
+      setPage(page - 1);
+    } else {
+      await chargerProduits(page);
+    }
   }
 
   return (
@@ -168,6 +182,13 @@ export default function ProduitsManager({ boutiqueId }: { boutiqueId: string }) 
             ))}
           </div>
         )}
+
+        <PaginationControls
+          page={page}
+          totalPages={totalPages}
+          onPrev={() => setPage((p) => Math.max(1, p - 1))}
+          onNext={() => setPage((p) => Math.min(totalPages, p + 1))}
+        />
       </div>
     </div>
   );
