@@ -206,7 +206,7 @@ export default function LandingPage() {
           className="absolute inset-0 pointer-events-none"
           style={{
             backgroundImage:
-              "radial-gradient(1100px 650px at 88% 8%, rgba(217,142,20,0.30), transparent 60%), radial-gradient(700px 500px at 10% 100%, rgba(0,158,73,0.12), transparent 60%)",
+              "radial-gradient(1100px 650px at 88% 8%, rgba(149,191,71,0.30), transparent 60%), radial-gradient(700px 500px at 10% 100%, rgba(149,191,71,0.12), transparent 60%)",
           }}
         />
         <div
@@ -219,7 +219,7 @@ export default function LandingPage() {
             <h1 className="text-[34px] md:text-[56px] leading-[0.95] font-[800] tracking-[-0.03em] text-white">
               Votre boutique en ligne
               <br />
-              <span className="text-[#FCD116]">en 5 minutes.</span>
+              <span className="text-[#95BF47]">en 5 minutes.</span>
             </h1>
             <p className="mt-5 text-[16px] md:text-[18px] leading-relaxed text-zinc-300 max-w-[560px]">
               Vendez sur WhatsApp · Encaissez par Mobile Money
