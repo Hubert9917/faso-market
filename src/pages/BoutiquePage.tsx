@@ -119,6 +119,11 @@ export default function BoutiquePage() {
                 <div className="p-4 flex flex-col flex-1">
                   <div className="font-bold text-[15px]">{p.nom}</div>
                   <div className="mt-1 text-[14px] font-black">{p.prix.toLocaleString("fr-FR")} F</div>
+                  {p.fournisseur && (
+                    <div className="mt-1 inline-flex items-center gap-1 text-[10px] font-bold text-[#009E49]">
+                      <ShieldCheck size={11} /> {p.fournisseur}
+                    </div>
+                  )}
                   <div className="text-[12px] text-zinc-500">
                     {p.stock > 0 ? `En stock (${p.stock})` : "Rupture de stock"}
                   </div>

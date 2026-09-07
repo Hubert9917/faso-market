@@ -91,3 +91,11 @@ create policy "Marchand peut modifier ses photos"
 create policy "Marchand peut supprimer ses photos"
   on storage.objects for delete
   using (bucket_id = 'produits' and auth.uid() = owner);
+
+-- 4) CATALOGUE MARKETPLACE (revente / sourcing) ---------------------------
+-- Champs optionnels : un marchand (ou Faso Market lui-meme, via son propre
+-- compte/boutique) peut noter le fournisseur et le prix d'achat d'un produit
+-- revendu avec marge. Le prix d'achat reste prive (jamais affiche
+-- publiquement), le fournisseur peut etre affiche comme badge de confiance.
+alter table public.produits add column if not exists prix_achat numeric(12, 2);
+alter table public.produits add column if not exists fournisseur text;

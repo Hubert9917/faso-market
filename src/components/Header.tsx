@@ -51,6 +51,7 @@ export default function Header() {
               : "hidden md:flex items-center gap-7 text-[13.5px] font-medium text-zinc-600"
           }
         >
+          <Link to="/catalogue" className={surLaLanding ? "hover:text-white" : "hover:text-black"}>Catalogue</Link>
           <button onClick={() => allerVersSection("comment")} className={surLaLanding ? "hover:text-white" : "hover:text-black"}>Comment ça marche</button>
           <button onClick={() => allerVersSection("tarifs")} className={surLaLanding ? "hover:text-white" : "hover:text-black"}>Tarifs</button>
           <button onClick={() => allerVersSection("boutiques")} className={surLaLanding ? "hover:text-white" : "hover:text-black"}>Boutiques</button>
