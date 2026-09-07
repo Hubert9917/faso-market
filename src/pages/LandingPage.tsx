@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import PaginationControls from "../components/PaginationControls";
 import { supabase, supabaseConfigured } from "../lib/supabase";
 import type { Boutique } from "../lib/types";
 
@@ -128,10 +129,16 @@ const pricingPlans = (annual: boolean) => [
   },
 ];
 
+const BOUTIQUES_PAR_PAGE = 8;
+
 export default function LandingPage() {
   const [annual, setAnnual] = useState(false);
   const [boutiques, setBoutiques] = useState<Boutique[] | undefined>(undefined);
+  const [pageBoutiques, setPageBoutiques] = useState(1);
+  const [totalBoutiques, setTotalBoutiques] = useState(0);
   const location = useLocation();
+
+  const totalPagesBoutiques = Math.max(1, Math.ceil(totalBoutiques / BOUTIQUES_PAR_PAGE));
 
   useEffect(() => {
     const scrollTo = (location.state as { scrollTo?: string } | null)?.scrollTo;
@@ -143,11 +150,18 @@ export default function LandingPage() {
   useEffect(() => {
     if (!supabaseConfigured) return;
     Promise.resolve(
-      supabase.from("boutiques").select("*").order("created_at", { ascending: false }).limit(8)
+      supabase
+        .from("boutiques")
+        .select("*", { count: "exact" })
+        .order("created_at", { ascending: false })
+        .range((pageBoutiques - 1) * BOUTIQUES_PAR_PAGE, pageBoutiques * BOUTIQUES_PAR_PAGE - 1)
     )
-      .then(({ data }) => setBoutiques((data as Boutique[]) ?? []))
+      .then(({ data, count }) => {
+        setBoutiques((data as Boutique[]) ?? []);
+        setTotalBoutiques(count ?? 0);
+      })
       .catch(() => setBoutiques([]));
-  }, []);
+  }, [pageBoutiques]);
 
   return (
     <div className="min-h-screen bg-[#FFFEFB] text-zinc-900 selection:bg-[#FCD116]/40 font-[Inter,system-ui,sans-serif]">
@@ -540,6 +554,13 @@ export default function LandingPage() {
               ))}
             </div>
           )}
+
+          <PaginationControls
+            page={pageBoutiques}
+            totalPages={totalPagesBoutiques}
+            onPrev={() => setPageBoutiques((p) => Math.max(1, p - 1))}
+            onNext={() => setPageBoutiques((p) => Math.min(totalPagesBoutiques, p + 1))}
+          />
         </div>
       </section>
 

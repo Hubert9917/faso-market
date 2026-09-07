@@ -3,8 +3,12 @@ import { Link, useParams } from "react-router-dom";
 import { MapPin, MessageCircle, Package, ShieldCheck } from "lucide-react";
 import Footer from "../components/Footer";
 import SupabaseAvertissement from "../components/SupabaseAvertissement";
+import BoutonRetour from "../components/BoutonRetour";
+import PaginationControls from "../components/PaginationControls";
 import { supabase, supabaseConfigured } from "../lib/supabase";
 import type { Boutique, Produit } from "../lib/types";
+
+const PRODUITS_PAR_PAGE = 9;
 
 function lienWhatsapp(whatsapp: string, message: string) {
   const numero = whatsapp.replace(/[^0-9]/g, "");
@@ -15,24 +19,35 @@ export default function BoutiquePage() {
   const { slug } = useParams<{ slug: string }>();
   const [boutique, setBoutique] = useState<Boutique | null | undefined>(undefined);
   const [produits, setProduits] = useState<Produit[]>([]);
+  const [page, setPage] = useState(1);
+  const [totalProduits, setTotalProduits] = useState(0);
 
   useEffect(() => {
+    setPage(1);
     if (!slug || !supabaseConfigured) return;
 
     Promise.resolve(supabase.from("boutiques").select("*").eq("slug", slug).maybeSingle())
-      .then(async ({ data }) => {
-        setBoutique((data as Boutique) ?? null);
-        if (data) {
-          const { data: prod } = await supabase
-            .from("produits")
-            .select("*")
-            .eq("boutique_id", data.id)
-            .order("created_at", { ascending: false });
-          setProduits((prod as Produit[]) ?? []);
-        }
-      })
+      .then(({ data }) => setBoutique((data as Boutique) ?? null))
       .catch(() => setBoutique(null));
   }, [slug]);
+
+  useEffect(() => {
+    if (!boutique || !supabaseConfigured) return;
+
+    Promise.resolve(
+      supabase
+        .from("produits")
+        .select("*", { count: "exact" })
+        .eq("boutique_id", boutique.id)
+        .order("created_at", { ascending: false })
+        .range((page - 1) * PRODUITS_PAR_PAGE, page * PRODUITS_PAR_PAGE - 1)
+    ).then(({ data, count }) => {
+      setProduits((data as Produit[]) ?? []);
+      setTotalProduits(count ?? 0);
+    });
+  }, [boutique, page]);
+
+  const totalPages = Math.max(1, Math.ceil(totalProduits / PRODUITS_PAR_PAGE));
 
   if (!supabaseConfigured) {
     return <SupabaseAvertissement />;
@@ -59,6 +74,9 @@ export default function BoutiquePage() {
   return (
     <div className="min-h-screen bg-[#FFFEFB]">
       <div className="bg-zinc-900 text-white">
+        <div className="mx-auto max-w-[900px] px-5 pt-5">
+          <BoutonRetour className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-zinc-400 hover:text-white transition" />
+        </div>
         <div className="mx-auto max-w-[900px] px-5 py-10 flex items-center justify-between flex-wrap gap-4">
           <div>
             <div className="text-[11px] font-bold tracking-widest text-zinc-400 flex items-center gap-1">
@@ -120,6 +138,13 @@ export default function BoutiquePage() {
             ))}
           </div>
         )}
+
+        <PaginationControls
+          page={page}
+          totalPages={totalPages}
+          onPrev={() => setPage((p) => Math.max(1, p - 1))}
+          onNext={() => setPage((p) => Math.min(totalPages, p + 1))}
+        />
       </div>
 
       <Footer />
