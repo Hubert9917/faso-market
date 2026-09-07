@@ -201,63 +201,67 @@ export default function LandingPage() {
       <Header />
 
       {/* Hero */}
-      <section className="relative overflow-hidden">
+      <section className="relative overflow-hidden bg-[#08070a]">
         <div
-          className="absolute inset-0 pointer-events-none opacity-[0.03]"
-          style={{ backgroundImage: "repeating-linear-gradient(45deg, #000 0 1px, transparent 1px 14px)" }}
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            backgroundImage:
+              "radial-gradient(1100px 650px at 88% 8%, rgba(217,142,20,0.30), transparent 60%), radial-gradient(700px 500px at 10% 100%, rgba(0,158,73,0.12), transparent 60%)",
+          }}
         />
-        <div className="absolute -top-32 -right-32 h-[520px] w-[520px] rounded-full bg-[#FCD116]/30 blur-[90px]" />
-        <div className="absolute -bottom-40 -left-40 h-[560px] w-[560px] rounded-full bg-[#009E49]/15 blur-[80px]" />
+        <div
+          className="absolute inset-0 pointer-events-none opacity-[0.04]"
+          style={{ backgroundImage: "repeating-linear-gradient(45deg, #fff 0 1px, transparent 1px 14px)" }}
+        />
 
-        <div className="mx-auto max-w-[1180px] px-5 md:px-8 pt-10 md:pt-20 pb-12 md:pb-20 grid md:grid-cols-[1.15fr_0.85fr] gap-10 items-center">
+        <div className="relative mx-auto max-w-[1180px] px-5 md:px-8 pt-10 md:pt-20 pb-12 md:pb-16 grid md:grid-cols-[1.15fr_0.85fr] gap-10 items-center">
           <div>
-            <div className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-3 py-1.5 text-[11px] font-semibold tracking-wide shadow-sm">
-              <span className="h-2 w-2 rounded-full bg-[#009E49] animate-pulse" />
-              0F POUR COMMENCER • NOUVEAU AU BURKINA • PAIEMENT WAVE & ORANGE MONEY
-            </div>
-            <h1 className="mt-5 text-[34px] md:text-[56px] leading-[0.95] font-[800] tracking-[-0.03em]">
-              Créez votre boutique
+            <h1 className="text-[34px] md:text-[56px] leading-[0.95] font-[800] tracking-[-0.03em] text-white">
+              Votre boutique en ligne
               <br />
-              en ligne en{" "}
-              <span className="relative inline-block">
-                <span className="relative z-10">5 minutes.</span>
-                <span className="absolute bottom-1 left-0 right-0 h-[14px] bg-[#FCD116] -rotate-1 z-0" />
-              </span>
-              <br />
-              Vendez à tout Ouaga.
+              <span className="text-[#FCD116]">en 5 minutes.</span>
             </h1>
-            <p className="mt-5 text-[16px] md:text-[18px] leading-relaxed text-zinc-600 max-w-[560px]">
-              Le marché du Burkina dans votre téléphone. Créez votre boutique et vendez sur WhatsApp{" "}
-              <b className="text-zinc-900">sans commission</b>. Boutique pro, catalogue auto, paiement Mobile
-              Money.
+            <p className="mt-5 text-[16px] md:text-[18px] leading-relaxed text-zinc-300 max-w-[560px]">
+              Vendez sur WhatsApp · Encaissez par Mobile Money
             </p>
+            <div className="mt-6 flex flex-wrap gap-2.5">
+              <span className="rounded-full bg-[#009E49] text-white px-4 py-2 text-[12px] font-extrabold tracking-wide">
+                0 F POUR COMMENCER
+              </span>
+              <span className="rounded-full bg-[#EF2B2D] text-white px-4 py-2 text-[12px] font-extrabold tracking-wide">
+                0% COMMISSION
+              </span>
+              <span className="rounded-full bg-[#FCD116] text-black px-4 py-2 text-[12px] font-extrabold tracking-wide">
+                ORANGE MONEY · MOOV · WAVE
+              </span>
+            </div>
             <div className="mt-7 flex flex-wrap gap-3">
               <Link
                 to="/inscription"
-                className="h-[52px] px-7 rounded-full bg-zinc-900 text-white font-bold text-[15px] inline-flex items-center gap-2 hover:bg-black transition"
+                className="h-[52px] px-7 rounded-full bg-[#EF2B2D] text-white font-bold text-[15px] inline-flex items-center gap-2 hover:bg-[#d42426] transition shadow-[0_10px_24px_rgba(239,43,45,0.3)]"
               >
                 Créer ma boutique gratuitement <ArrowRight size={18} />
               </Link>
               <button
                 onClick={() => document.getElementById("boutiques")?.scrollIntoView({ behavior: "smooth" })}
-                className="h-[52px] px-6 rounded-full bg-white border border-zinc-200 font-semibold text-[14px] inline-flex items-center gap-2 hover:border-zinc-300"
+                className="h-[52px] px-6 rounded-full bg-white text-zinc-900 font-semibold text-[14px] inline-flex items-center gap-2 hover:bg-zinc-100 transition"
               >
                 <Play size={16} /> Voir les boutiques
               </button>
             </div>
-            <div className="mt-6 flex items-center gap-3 text-[12.5px] text-zinc-500">
+            <div className="mt-6 flex items-center gap-3 text-[12.5px] text-zinc-400">
               <div className="flex -space-x-2">
                 {["LM", "MM", "BS"].map((m) => (
                   <div
                     key={m}
-                    className="h-7 w-7 rounded-full bg-zinc-200 border-2 border-white grid place-items-center text-[11px] font-bold"
+                    className="h-7 w-7 rounded-full bg-zinc-800 border-2 border-[#08070a] grid place-items-center text-[11px] font-bold text-white"
                   >
                     {m}
                   </div>
                 ))}
               </div>
               <span>
-                Service en cours de lancement — <b className="text-zinc-800">les premières boutiques ouvrent bientôt</b>
+                Service en cours de lancement — <b className="text-zinc-200">les premières boutiques ouvrent bientôt</b>
               </span>
             </div>
           </div>
@@ -323,6 +327,12 @@ export default function LandingPage() {
               </div>
             </div>
           </div>
+        </div>
+
+        <div className="relative flex h-2">
+          <div className="flex-1 bg-[#EF2B2D]" />
+          <div className="flex-1 bg-[#FCD116]" />
+          <div className="flex-1 bg-[#009E49]" />
         </div>
       </section>
 
