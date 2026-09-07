@@ -15,70 +15,14 @@ import {
   Star,
   Store,
   Truck,
-  X,
   Zap,
 } from "lucide-react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import { supabase, supabaseConfigured } from "../lib/supabase";
+import type { Boutique } from "../lib/types";
 
-const boutiquesDemo = [
-  {
-    id: 1,
-    name: "Épicerie du quartier",
-    cat: "Alimentation",
-    city: "Ouaga 2000",
-    color: "bg-[#009E49]",
-    products: [
-      { n: "Riz local 25kg", p: "22 500 F" },
-      { n: "Huile 5L", p: "6 000 F" },
-      { n: "Pack jus", p: "4 500 F" },
-    ],
-    emoji: "🥫",
-    desc: "Épicerie fine et produits locaux. Livraison en 2h à Ouaga.",
-  },
-  {
-    id: 2,
-    name: "Électro Faso",
-    cat: "Électroménager",
-    city: "Ouaga - Zone 1",
-    color: "bg-[#EF2B2D]",
-    products: [
-      { n: "Mixeur Silver Crest", p: "15 000 F" },
-      { n: "Ventilateur", p: "25 000 F" },
-      { n: "Fer à repasser", p: "12 500 F" },
-    ],
-    emoji: "📺",
-    desc: "Le meilleur de l'électro à prix marché. Garantie 1 an.",
-  },
-  {
-    id: 3,
-    name: "Atelier Danfani",
-    cat: "Mode & Tissus",
-    city: "Bobo-Dioulasso",
-    color: "bg-[#FCD116] text-black",
-    products: [
-      { n: "Pagne Faso Danfani", p: "18 000 F" },
-      { n: "Boubou brodé", p: "35 000 F" },
-      { n: "Bazin riche", p: "50 000 F" },
-    ],
-    emoji: "👗",
-    desc: "Mode africaine authentique. Tailleur sur mesure disponible.",
-  },
-  {
-    id: 4,
-    name: "Téléphones Express",
-    cat: "Téléphones",
-    city: "Ouaga - Zabrda",
-    color: "bg-black text-white",
-    products: [
-      { n: "Tecno Spark 10", p: "75 000 F" },
-      { n: "iPhone 11 Recond.", p: "185 000 F" },
-      { n: "Airpods Pro", p: "15 000 F" },
-    ],
-    emoji: "📱",
-    desc: "#1 Téléphones à Ouaga. Troc possible + garantie.",
-  },
-];
+const couleursBoutique = ["bg-[#009E49]", "bg-[#EF2B2D]", "bg-[#FCD116] text-black", "bg-zinc-900 text-white"];
 
 const features = [
   {
@@ -186,7 +130,7 @@ const pricingPlans = (annual: boolean) => [
 
 export default function LandingPage() {
   const [annual, setAnnual] = useState(false);
-  const [selected, setSelected] = useState<(typeof boutiquesDemo)[number] | null>(null);
+  const [boutiques, setBoutiques] = useState<Boutique[] | undefined>(undefined);
   const location = useLocation();
 
   useEffect(() => {
@@ -195,6 +139,15 @@ export default function LandingPage() {
       document.getElementById(scrollTo)?.scrollIntoView({ behavior: "smooth" });
     }
   }, [location.state]);
+
+  useEffect(() => {
+    if (!supabaseConfigured) return;
+    Promise.resolve(
+      supabase.from("boutiques").select("*").order("created_at", { ascending: false }).limit(8)
+    )
+      .then(({ data }) => setBoutiques((data as Boutique[]) ?? []))
+      .catch(() => setBoutiques([]));
+  }, []);
 
   return (
     <div className="min-h-screen bg-[#FFFEFB] text-zinc-900 selection:bg-[#FCD116]/40 font-[Inter,system-ui,sans-serif]">
@@ -524,9 +477,9 @@ export default function LandingPage() {
         <div className="mx-auto max-w-[1180px] px-5 md:px-8 py-16 md:py-20">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <h2 className="text-[28px] md:text-[40px] font-extrabold leading-[0.9] tracking-tight">
-              À quoi ressemblera
+              Elles vendent déjà
               <br />
-              votre boutique.
+              sur Faso Market.
             </h2>
             <Link
               to="/inscription"
@@ -535,45 +488,58 @@ export default function LandingPage() {
               Créer la mienne <ArrowRight size={14} />
             </Link>
           </div>
-          <p className="mt-2 text-[13px] text-zinc-500">
-            Exemples illustratifs — les premières vraies boutiques ouvrent bientôt.
-          </p>
-          <div className="mt-8 grid md:grid-cols-4 gap-4">
-            {boutiquesDemo.map((m) => (
-              <button
-                key={m.id}
-                onClick={() => setSelected(m)}
-                className="text-left rounded-[24px] bg-white border shadow-[0_8px_24px_rgba(0,0,0,0.04)] overflow-hidden hover:shadow-[0_12px_32px_rgba(0,0,0,0.08)] hover:-translate-y-0.5 transition group"
+
+          {boutiques === undefined && (
+            <p className="mt-8 text-[13px] text-zinc-500">Chargement des boutiques…</p>
+          )}
+
+          {boutiques && boutiques.length === 0 && (
+            <div className="mt-8 rounded-[24px] bg-white border p-8 text-center">
+              <p className="text-[14px] text-zinc-600">
+                Aucune boutique pour l'instant — sois le premier commerçant de Faso Market ! 🎉
+              </p>
+              <Link
+                to="/inscription"
+                className="mt-4 inline-flex h-11 px-5 rounded-full bg-[#EF2B2D] text-white text-[13px] font-bold items-center gap-2"
               >
-                <div className={`h-28 ${m.color} relative p-4 flex justify-between`}>
-                  <div className="text-[28px]">{m.emoji}</div>
-                  <div className="text-[10px] font-bold tracking-widest opacity-80 bg-white/20 rounded-full px-2 py-1 h-fit">
-                    {m.cat}
-                  </div>
-                  <div className="absolute bottom-3 left-4 right-4 flex items-center justify-between">
-                    <div className="font-bold text-[14px]">{m.name}</div>
-                    <div className="text-[11px] opacity-80 flex items-center gap-1">
-                      <MapPin size={10} />
-                      {m.city}
+                Créer ma boutique <ArrowRight size={14} />
+              </Link>
+            </div>
+          )}
+
+          {boutiques && boutiques.length > 0 && (
+            <div className="mt-8 grid md:grid-cols-4 gap-4">
+              {boutiques.map((b, i) => (
+                <Link
+                  key={b.id}
+                  to={`/boutique/${b.slug}`}
+                  className="text-left rounded-[24px] bg-white border shadow-[0_8px_24px_rgba(0,0,0,0.04)] overflow-hidden hover:shadow-[0_12px_32px_rgba(0,0,0,0.08)] hover:-translate-y-0.5 transition group"
+                >
+                  <div className={`h-28 ${couleursBoutique[i % couleursBoutique.length]} relative p-4 flex justify-between`}>
+                    <div className="text-[28px] font-black">{b.nom.charAt(0).toUpperCase()}</div>
+                    <div className="text-[10px] font-bold tracking-widest opacity-80 bg-white/20 rounded-full px-2 py-1 h-fit">
+                      {b.type}
+                    </div>
+                    <div className="absolute bottom-3 left-4 right-4 flex items-center justify-between">
+                      <div className="font-bold text-[14px] truncate pr-2">{b.nom}</div>
+                      <div className="text-[11px] opacity-80 flex items-center gap-1 shrink-0">
+                        <MapPin size={10} />
+                        {b.ville}
+                      </div>
                     </div>
                   </div>
-                </div>
-                <div className="p-4">
-                  <div className="space-y-2">
-                    {m.products.map((k) => (
-                      <div key={k.n} className="flex items-center justify-between rounded-xl bg-zinc-50 px-3 py-2">
-                        <span className="text-[12px] font-medium truncate pr-2">{k.n}</span>
-                        <span className="text-[11px] font-bold whitespace-nowrap">{k.p}</span>
-                      </div>
-                    ))}
+                  <div className="p-4">
+                    <div className="text-[12px] text-zinc-500 line-clamp-2 min-h-[32px]">
+                      {b.description || "Boutique en ligne sur Faso Market."}
+                    </div>
+                    <div className="mt-3 text-[11px] font-bold flex items-center gap-1">
+                      Visiter la boutique <ChevronRight size={12} className="group-hover:translate-x-0.5 transition" />
+                    </div>
                   </div>
-                  <div className="mt-3 text-[11px] font-bold flex items-center gap-1">
-                    Visiter la boutique <ChevronRight size={12} className="group-hover:translate-x-0.5 transition" />
-                  </div>
-                </div>
-              </button>
-            ))}
-          </div>
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
@@ -608,55 +574,6 @@ export default function LandingPage() {
           ))}
         </div>
       </section>
-
-      {selected && (
-        <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center">
-          <div className="absolute inset-0 bg-zinc-900/60 backdrop-blur-sm" onClick={() => setSelected(null)} />
-          <div className="relative w-full md:max-w-[520px] bg-white rounded-t-[28px] md:rounded-[28px] shadow-2xl overflow-hidden max-h-[88vh] flex flex-col animate-[slideUp_0.25s_ease]">
-            <div className={`h-28 ${selected.color} p-5 flex justify-between`}>
-              <div>
-                <div className="text-[26px]">{selected.emoji}</div>
-                <div className="mt-1 font-extrabold text-[20px] leading-tight">{selected.name}</div>
-                <div className="text-[12px] opacity-80">
-                  {selected.cat} • {selected.city}
-                </div>
-              </div>
-              <button onClick={() => setSelected(null)} className="h-9 w-9 rounded-full bg-white/20 grid place-items-center">
-                <X size={16} />
-              </button>
-            </div>
-            <div className="p-5 space-y-4 overflow-auto">
-              <div className="text-[13px] text-zinc-600">{selected.desc}</div>
-              <div className="grid grid-cols-1 gap-2">
-                {selected.products.map((m) => (
-                  <div key={m.n} className="flex items-center justify-between rounded-2xl border bg-zinc-50 p-4">
-                    <div>
-                      <div className="font-bold text-[14px]">{m.n}</div>
-                      <div className="text-[12px] text-zinc-500">Livraison aujourd'hui • Stock: 12</div>
-                    </div>
-                    <div className="text-right">
-                      <div className="font-black">{m.p}</div>
-                      <button className="mt-1 h-7 px-3 rounded-full bg-zinc-900 text-white text-[11px] font-bold">
-                        WhatsApp
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <div className="rounded-2xl bg-zinc-900 text-white p-4 flex items-center justify-between">
-                <div className="text-[12px]">
-                  Boutique vérifiée • Paiement sécurisé
-                  <br />
-                  <span className="text-[#FCD116] font-bold">Orange Money • Moov • Wave</span>
-                </div>
-                <div className="h-10 w-10 rounded-full bg-[#009E49] grid place-items-center">
-                  <MessageCircle size={18} />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       <Footer />
     </div>
