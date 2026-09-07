@@ -17,5 +17,11 @@ export type Produit = {
   prix: number;
   stock: number;
   photo_url: string | null;
+  prix_achat: number | null;
+  fournisseur: string | null;
   created_at: string;
+};
+
+export type ProduitAvecBoutique = Produit & {
+  boutiques: Pick<Boutique, "nom" | "slug" | "ville" | "whatsapp"> | null;
 };

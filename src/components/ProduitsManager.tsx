@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { Package, Plus, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronUp, Package, Plus, Trash2 } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import type { Produit } from "../lib/types";
 import PaginationControls from "./PaginationControls";
@@ -13,6 +13,9 @@ export default function ProduitsManager({ boutiqueId }: { boutiqueId: string }) 
   const [prix, setPrix] = useState("");
   const [stock, setStock] = useState("");
   const [photo, setPhoto] = useState<File | null>(null);
+  const [prixAchat, setPrixAchat] = useState("");
+  const [fournisseur, setFournisseur] = useState("");
+  const [optionsRevente, setOptionsRevente] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
@@ -60,12 +63,16 @@ export default function ProduitsManager({ boutiqueId }: { boutiqueId: string }) 
         photoUrl = supabase.storage.from("produits").getPublicUrl(chemin).data.publicUrl;
       }
 
+      const prixAchatNum = prixAchat.trim() ? Number(prixAchat) : null;
+
       const { error: insertError } = await supabase.from("produits").insert({
         boutique_id: boutiqueId,
         nom: nom.trim(),
         prix: prixNum,
         stock: stockNum,
         photo_url: photoUrl,
+        prix_achat: prixAchatNum,
+        fournisseur: fournisseur.trim() || null,
       });
       if (insertError) throw insertError;
 
@@ -73,6 +80,8 @@ export default function ProduitsManager({ boutiqueId }: { boutiqueId: string }) 
       setPrix("");
       setStock("");
       setPhoto(null);
+      setPrixAchat("");
+      setFournisseur("");
       setPage(1);
       await chargerProduits(1);
     } catch (err) {
@@ -149,6 +158,43 @@ export default function ProduitsManager({ boutiqueId }: { boutiqueId: string }) 
           <Plus size={16} /> {saving ? "Ajout…" : "Ajouter"}
         </button>
 
+        <div className="md:col-span-5">
+          <button
+            type="button"
+            onClick={() => setOptionsRevente((v) => !v)}
+            className="text-[12px] font-bold text-zinc-500 hover:text-zinc-900 inline-flex items-center gap-1"
+          >
+            Produit revendu (fournisseur, prix d'achat){" "}
+            {optionsRevente ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+          </button>
+        </div>
+
+        {optionsRevente && (
+          <>
+            <div>
+              <label className="text-[11px] font-bold">Fournisseur (optionnel)</label>
+              <input
+                value={fournisseur}
+                onChange={(e) => setFournisseur(e.target.value)}
+                placeholder="Ex: Supermarché Marina"
+                className="mt-1 w-full h-11 rounded-xl border border-zinc-200 bg-zinc-50 px-3 text-[13px] outline-none focus:ring-2 focus:ring-zinc-900"
+              />
+            </div>
+            <div>
+              <label className="text-[11px] font-bold">Prix d'achat (optionnel)</label>
+              <input
+                type="number"
+                min={0}
+                value={prixAchat}
+                onChange={(e) => setPrixAchat(e.target.value)}
+                placeholder="150000"
+                className="mt-1 w-full h-11 rounded-xl border border-zinc-200 bg-zinc-50 px-3 text-[13px] outline-none focus:ring-2 focus:ring-zinc-900"
+              />
+              <p className="mt-1 text-[10px] text-zinc-400">Reste privé, jamais affiché publiquement.</p>
+            </div>
+          </>
+        )}
+
         {error && <div className="md:col-span-5 text-[12px] text-[#EF2B2D] font-semibold">{error}</div>}
       </form>
 
@@ -172,6 +218,14 @@ export default function ProduitsManager({ boutiqueId }: { boutiqueId: string }) 
                 <div className="text-[13px] text-zinc-600">
                   {p.prix.toLocaleString("fr-FR")} F • Stock: {p.stock}
                 </div>
+                {p.fournisseur && (
+                  <div className="mt-1 text-[11px] text-zinc-500">Fournisseur : {p.fournisseur}</div>
+                )}
+                {p.prix_achat != null && (
+                  <div className="mt-1 text-[11px] font-semibold text-[#009E49]">
+                    Marge : {(p.prix - p.prix_achat).toLocaleString("fr-FR")} F
+                  </div>
+                )}
                 <button
                   onClick={() => supprimerProduit(p.id)}
                   className="mt-3 self-start inline-flex items-center gap-1 text-[12px] font-semibold text-[#EF2B2D]"
