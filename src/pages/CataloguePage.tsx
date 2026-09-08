@@ -1,24 +1,21 @@
 import { useEffect, useState } from "react";
-import { Search, MapPin, MessageCircle, Package, ShieldCheck, Store } from "lucide-react";
+import { Search, MapPin, Package, ShieldCheck, Store } from "lucide-react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import PaginationControls from "../components/PaginationControls";
 import SupabaseAvertissement from "../components/SupabaseAvertissement";
+import CommandeModal from "../components/CommandeModal";
 import { supabase, supabaseConfigured } from "../lib/supabase";
 import type { ProduitAvecBoutique } from "../lib/types";
 
 const PRODUITS_PAR_PAGE = 12;
-
-function lienWhatsapp(whatsapp: string, message: string) {
-  const numero = whatsapp.replace(/[^0-9]/g, "");
-  return `https://wa.me/${numero}?text=${encodeURIComponent(message)}`;
-}
 
 export default function CataloguePage() {
   const [produits, setProduits] = useState<ProduitAvecBoutique[] | undefined>(undefined);
   const [recherche, setRecherche] = useState("");
   const [page, setPage] = useState(1);
   const [totalProduits, setTotalProduits] = useState(0);
+  const [produitACommander, setProduitACommander] = useState<ProduitAvecBoutique | null>(null);
 
   const totalPages = Math.max(1, Math.ceil(totalProduits / PRODUITS_PAR_PAGE));
 
@@ -27,7 +24,7 @@ export default function CataloguePage() {
 
     let requete = supabase
       .from("produits")
-      .select("*, boutiques(nom, slug, ville, whatsapp)", { count: "exact" })
+      .select("*, boutiques(id, nom, slug, ville, whatsapp)", { count: "exact" })
       .order("created_at", { ascending: false });
 
     if (recherche.trim()) {
@@ -106,17 +103,12 @@ export default function CataloguePage() {
                     </div>
                   )}
                   {p.boutiques && (
-                    <a
-                      href={lienWhatsapp(
-                        p.boutiques.whatsapp,
-                        `Bonjour, je veux commander : ${p.nom} (${p.prix.toLocaleString("fr-FR")} F) sur ${p.boutiques.nom}.`
-                      )}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="mt-3 h-10 rounded-full bg-zinc-900 text-white text-[12px] font-bold grid place-items-center gap-1 inline-flex items-center justify-center"
+                    <button
+                      onClick={() => setProduitACommander(p)}
+                      className="mt-3 h-10 rounded-full bg-zinc-900 text-white text-[12px] font-bold grid place-items-center"
                     >
-                      <MessageCircle size={14} /> Commander
-                    </a>
+                      Commander
+                    </button>
                   )}
                 </div>
               </div>
@@ -133,6 +125,14 @@ export default function CataloguePage() {
       </div>
 
       <Footer />
+
+      {produitACommander && produitACommander.boutiques && (
+        <CommandeModal
+          produit={produitACommander}
+          boutique={produitACommander.boutiques}
+          onClose={() => setProduitACommander(null)}
+        />
+      )}
     </div>
   );
 }
