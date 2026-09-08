@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { Copy, LogOut, Store } from "lucide-react";
+import { Link } from "react-router-dom";
+import { ClipboardList, Copy, LogOut, Store } from "lucide-react";
 import Header from "../components/Header";
 import ProduitsManager from "../components/ProduitsManager";
 import SupabaseAvertissement from "../components/SupabaseAvertissement";
@@ -211,6 +212,12 @@ export default function DashboardPage() {
                 </div>
               </div>
               <div className="flex gap-2">
+                <Link
+                  to="/dashboard/commandes"
+                  className="h-10 px-4 rounded-full bg-white/10 hover:bg-white/20 transition text-[13px] font-bold inline-flex items-center gap-2"
+                >
+                  <ClipboardList size={14} /> Mes commandes
+                </Link>
                 <button
                   onClick={copierLien}
                   className="h-10 px-4 rounded-full bg-white/10 hover:bg-white/20 transition text-[13px] font-bold inline-flex items-center gap-2"

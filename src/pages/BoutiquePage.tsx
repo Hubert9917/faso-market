@@ -5,15 +5,12 @@ import Footer from "../components/Footer";
 import SupabaseAvertissement from "../components/SupabaseAvertissement";
 import BoutonRetour from "../components/BoutonRetour";
 import PaginationControls from "../components/PaginationControls";
+import CommandeModal from "../components/CommandeModal";
 import { supabase, supabaseConfigured } from "../lib/supabase";
+import { lienWhatsapp } from "../lib/whatsapp";
 import type { Boutique, Produit } from "../lib/types";
 
 const PRODUITS_PAR_PAGE = 9;
-
-function lienWhatsapp(whatsapp: string, message: string) {
-  const numero = whatsapp.replace(/[^0-9]/g, "");
-  return `https://wa.me/${numero}?text=${encodeURIComponent(message)}`;
-}
 
 export default function BoutiquePage() {
   const { slug } = useParams<{ slug: string }>();
@@ -21,6 +18,7 @@ export default function BoutiquePage() {
   const [produits, setProduits] = useState<Produit[]>([]);
   const [page, setPage] = useState(1);
   const [totalProduits, setTotalProduits] = useState(0);
+  const [produitACommander, setProduitACommander] = useState<Produit | null>(null);
 
   useEffect(() => {
     setPage(1);
@@ -127,17 +125,12 @@ export default function BoutiquePage() {
                   <div className="text-[12px] text-zinc-500">
                     {p.stock > 0 ? `En stock (${p.stock})` : "Rupture de stock"}
                   </div>
-                  <a
-                    href={lienWhatsapp(
-                      boutique.whatsapp,
-                      `Bonjour, je veux commander : ${p.nom} (${p.prix.toLocaleString("fr-FR")} F) sur ${boutique.nom}.`
-                    )}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                  <button
+                    onClick={() => setProduitACommander(p)}
                     className="mt-3 h-10 rounded-full bg-zinc-900 text-white text-[13px] font-bold grid place-items-center"
                   >
-                    Commander sur WhatsApp
-                  </a>
+                    Commander
+                  </button>
                 </div>
               </div>
             ))}
@@ -153,6 +146,14 @@ export default function BoutiquePage() {
       </div>
 
       <Footer />
+
+      {produitACommander && (
+        <CommandeModal
+          produit={produitACommander}
+          boutique={boutique}
+          onClose={() => setProduitACommander(null)}
+        />
+      )}
     </div>
   );
 }

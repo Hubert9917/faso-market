@@ -7,6 +7,7 @@ import ConnexionPage from "./pages/ConnexionPage";
 import DashboardPage from "./pages/DashboardPage";
 import BoutiquePage from "./pages/BoutiquePage";
 import CataloguePage from "./pages/CataloguePage";
+import CommandesPage from "./pages/CommandesPage";
 
 export default function App() {
   return (
@@ -25,6 +26,14 @@ export default function App() {
         />
         <Route path="/boutique/:slug" element={<BoutiquePage />} />
         <Route path="/catalogue" element={<CataloguePage />} />
+        <Route
+          path="/dashboard/commandes"
+          element={
+            <ProtectedRoute>
+              <CommandesPage />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
     </AuthProvider>
   );

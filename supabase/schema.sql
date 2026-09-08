@@ -99,3 +99,58 @@ create policy "Marchand peut supprimer ses photos"
 -- publiquement), le fournisseur peut etre affiche comme badge de confiance.
 alter table public.produits add column if not exists prix_achat numeric(12, 2);
 alter table public.produits add column if not exists fournisseur text;
+
+-- 5) LIVREURS -------------------------------------------------------------
+create table if not exists public.livreurs (
+  id uuid primary key default gen_random_uuid(),
+  boutique_id uuid not null references public.boutiques (id) on delete cascade,
+  nom text not null,
+  telephone text not null,
+  created_at timestamptz not null default now()
+);
+
+alter table public.livreurs enable row level security;
+
+create policy "Un marchand gere ses propres livreurs"
+  on public.livreurs for all
+  using (boutique_id in (select id from public.boutiques where owner_id = auth.uid()))
+  with check (boutique_id in (select id from public.boutiques where owner_id = auth.uid()));
+
+-- 6) COMMANDES --------------------------------------------------------------
+-- Une commande "gele" le nom et le prix du produit au moment de l'achat
+-- (produit_nom, prix) pour garder un historique fiable meme si le produit
+-- est ensuite modifie ou supprime.
+create table if not exists public.commandes (
+  id uuid primary key default gen_random_uuid(),
+  boutique_id uuid not null references public.boutiques (id) on delete cascade,
+  produit_id uuid references public.produits (id) on delete set null,
+  produit_nom text not null,
+  prix numeric(12, 2) not null check (prix >= 0),
+  quantite integer not null default 1 check (quantite > 0),
+  client_nom text not null,
+  client_telephone text not null,
+  client_adresse text not null,
+  livreur_id uuid references public.livreurs (id) on delete set null,
+  statut text not null default 'nouvelle'
+    check (statut in ('nouvelle', 'en_preparation', 'en_livraison', 'livree', 'annulee')),
+  created_at timestamptz not null default now()
+);
+
+alter table public.commandes enable row level security;
+
+-- N'importe quel client (meme non connecte) peut passer une commande.
+create policy "Un client peut passer commande"
+  on public.commandes for insert
+  with check (true);
+
+create policy "Un marchand voit les commandes de sa boutique"
+  on public.commandes for select
+  using (boutique_id in (select id from public.boutiques where owner_id = auth.uid()));
+
+create policy "Un marchand modifie les commandes de sa boutique"
+  on public.commandes for update
+  using (boutique_id in (select id from public.boutiques where owner_id = auth.uid()));
+
+create policy "Un marchand supprime les commandes de sa boutique"
+  on public.commandes for delete
+  using (boutique_id in (select id from public.boutiques where owner_id = auth.uid()));
