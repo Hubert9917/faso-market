@@ -4,7 +4,7 @@ import { supabase } from "../lib/supabase";
 import { lienWhatsapp } from "../lib/whatsapp";
 
 type Props = {
-  produit: { id: string; nom: string; prix: number };
+  produit: { id: string; nom: string; prix: number; stock: number };
   boutique: { id: string; nom: string; whatsapp: string };
   onClose: () => void;
 };
@@ -25,6 +25,11 @@ export default function CommandeModal({ produit, boutique, onClose }: Props) {
     const quantiteNum = Number(quantite);
     if (!nom.trim() || !telephone.trim() || !adresse.trim() || !Number.isInteger(quantiteNum) || quantiteNum < 1) {
       setError("Merci de remplir ton nom, téléphone, adresse et une quantité valide.");
+      return;
+    }
+
+    if (quantiteNum > produit.stock) {
+      setError(`Il ne reste que ${produit.stock} en stock pour ce produit.`);
       return;
     }
 
@@ -126,10 +131,12 @@ export default function CommandeModal({ produit, boutique, onClose }: Props) {
               <input
                 type="number"
                 min={1}
+                max={produit.stock}
                 value={quantite}
                 onChange={(e) => setQuantite(e.target.value)}
                 className="mt-1 w-full h-11 rounded-xl border border-zinc-200 bg-zinc-50 px-3 text-[13px] outline-none focus:ring-2 focus:ring-zinc-900"
               />
+              <p className="mt-1 text-[11px] text-zinc-400">{produit.stock} disponible(s)</p>
             </div>
 
             {error && (

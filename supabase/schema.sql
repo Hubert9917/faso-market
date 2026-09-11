@@ -154,3 +154,70 @@ create policy "Un marchand modifie les commandes de sa boutique"
 create policy "Un marchand supprime les commandes de sa boutique"
   on public.commandes for delete
   using (boutique_id in (select id from public.boutiques where owner_id = auth.uid()));
+
+-- 7) GESTION AUTOMATIQUE DU STOCK --------------------------------------------
+-- A la creation d'une commande, on verifie et decremente le stock du produit
+-- dans la meme transaction (verrou "for update" pour eviter les ventes en
+-- double sur un stock limite). Si le stock est insuffisant, l'insertion est
+-- refusee et le client (via supabase-js) recoit l'erreur du "raise exception".
+create or replace function public.decrementer_stock_commande()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  stock_actuel integer;
+begin
+  if new.produit_id is null then
+    return new;
+  end if;
+
+  select stock into stock_actuel
+  from public.produits
+  where id = new.produit_id
+  for update;
+
+  if stock_actuel is null then
+    return new;
+  end if;
+
+  if stock_actuel < new.quantite then
+    raise exception 'Stock insuffisant (% restant, % demande)', stock_actuel, new.quantite;
+  end if;
+
+  update public.produits
+  set stock = stock - new.quantite
+  where id = new.produit_id;
+
+  return new;
+end;
+$$;
+
+create trigger commandes_decrementer_stock
+  before insert on public.commandes
+  for each row
+  execute function public.decrementer_stock_commande();
+
+-- Si une commande est annulee, on restitue le stock du produit.
+create or replace function public.restituer_stock_commande_annulee()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if new.statut = 'annulee' and old.statut <> 'annulee' and new.produit_id is not null then
+    update public.produits
+    set stock = stock + new.quantite
+    where id = new.produit_id;
+  end if;
+
+  return new;
+end;
+$$;
+
+create trigger commandes_restituer_stock
+  after update on public.commandes
+  for each row
+  execute function public.restituer_stock_commande_annulee();

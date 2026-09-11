@@ -127,9 +127,10 @@ export default function BoutiquePage() {
                   </div>
                   <button
                     onClick={() => setProduitACommander(p)}
-                    className="mt-3 h-10 rounded-full bg-zinc-900 text-white text-[13px] font-bold grid place-items-center"
+                    disabled={p.stock <= 0}
+                    className="mt-3 h-10 rounded-full bg-zinc-900 text-white text-[13px] font-bold grid place-items-center disabled:opacity-40 disabled:cursor-not-allowed"
                   >
-                    Commander
+                    {p.stock > 0 ? "Commander" : "Rupture de stock"}
                   </button>
                 </div>
               </div>

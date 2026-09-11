@@ -102,12 +102,16 @@ export default function CataloguePage() {
                       <MapPin size={11} /> {p.boutiques.ville}
                     </div>
                   )}
+                  <div className="mt-1 text-[11px] text-zinc-500">
+                    {p.stock > 0 ? `En stock (${p.stock})` : "Rupture de stock"}
+                  </div>
                   {p.boutiques && (
                     <button
                       onClick={() => setProduitACommander(p)}
-                      className="mt-3 h-10 rounded-full bg-zinc-900 text-white text-[12px] font-bold grid place-items-center"
+                      disabled={p.stock <= 0}
+                      className="mt-3 h-10 rounded-full bg-zinc-900 text-white text-[12px] font-bold grid place-items-center disabled:opacity-40 disabled:cursor-not-allowed"
                     >
-                      Commander
+                      {p.stock > 0 ? "Commander" : "Rupture de stock"}
                     </button>
                   )}
                 </div>
